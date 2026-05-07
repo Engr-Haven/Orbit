@@ -5,6 +5,7 @@ const WeatherWidget = () => {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [cityUI, setCityUI] = useState(city);
 
   const fetchWeather = async () => {
     if (!city.trim()) {
@@ -20,7 +21,8 @@ const WeatherWidget = () => {
       if (!res.ok) throw new Error("Failed to fetch weather data");
       const data = await res.json();
       setWeather(data.current_condition[0]);
-      // setCity("");
+      setCityUI(city);
+      setCity("");
     } catch (err) {
       setError(err.message || "Failed to fetch weather");
       setWeather(null);
@@ -31,7 +33,7 @@ const WeatherWidget = () => {
 
   useEffect(() => {
     if (city) fetchWeather();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps,react-hooks/set-state-in-effect
   }, []); // intentional: fetch once on mount with default city
 
   return (
@@ -70,7 +72,7 @@ const WeatherWidget = () => {
             />
             <div>
               <p className="text-xs xs:text-base text-gray-600 dark:text-gray-400">
-                {city}
+                {cityUI}
               </p>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {weather.temp_C}°C

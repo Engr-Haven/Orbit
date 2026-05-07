@@ -63,7 +63,7 @@ const GitHubActivity = () => {
 
   useEffect(() => {
     if (username) fetchActivity();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps,react-hooks/set-state-in-effect
   }, []); // intentional: fetch once on mount with default username
 
   const formatDate = (dateString) => {
