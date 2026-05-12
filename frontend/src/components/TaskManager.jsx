@@ -1,26 +1,30 @@
 import { useState, useEffect } from "react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Badge } from "./ui/badge";
+import { Plus, Trash2, CheckCheck, ListTodo } from "lucide-react";
 
 const PRIORITIES = [
   {
     value: "high",
     label: "High",
-    dot: "🔴",
-    badge: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
-    border: "border-l-4 border-red-400",
+    color: "error",
+    gradient: "from-rose-500 to-red-500",
+    border: "border-l-[3px] border-red-400",
   },
   {
     value: "medium",
     label: "Medium",
-    dot: "🟡",
-    badge: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400",
-    border: "border-l-4 border-yellow-400",
+    color: "warning",
+    gradient: "from-amber-500 to-orange-500",
+    border: "border-l-[3px] border-amber-400",
   },
   {
     value: "low",
     label: "Low",
-    dot: "🟢",
-    badge: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
-    border: "border-l-4 border-green-400",
+    color: "success",
+    gradient: "from-emerald-500 to-green-500",
+    border: "border-l-[3px] border-emerald-400",
   },
 ];
 
@@ -86,105 +90,118 @@ const TaskManager = () => {
     return acc;
   }, {});
 
+  const totalActive = tasks.filter((t) => !t.completed).length;
+
   return (
     <div>
-      <h2 className="text-xl font-semibold text-primary mb-4">
-        ✅ Task Manager
-      </h2>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+          <ListTodo size={20} className="text-white" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-foreground">Task Manager</h2>
+          <p className="text-sm text-muted-foreground">Organize and prioritize your work</p>
+        </div>
+        {totalActive > 0 && (
+          <Badge variant="info" className="ml-auto">{totalActive} active</Badge>
+        )}
+      </div>
 
       {/* Priority summary badges */}
       {tasks.length > 0 && (
         <div className="flex gap-2 mb-4 flex-wrap">
           {PRIORITIES.map((p) =>
             counts[p.value] > 0 ? (
-              <span
-                key={p.value}
-                className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.badge}`}
-              >
-                {p.dot} {counts[p.value]} {p.label}
-              </span>
+              <Badge key={p.value} variant={p.color}>
+                {counts[p.value]} {p.label}
+              </Badge>
             ) : null,
           )}
         </div>
       )}
 
-      <form onSubmit={addTask} className="flex flex-col gap-2 mb-4">
-        <input
+      <form onSubmit={addTask} className="space-y-3 mb-6 p-4 rounded-xl bg-muted/30 border border-border/50">
+        <Input
           type="text"
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add a new task"
-          className="w-full px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
+          placeholder="Add a new task..."
         />
         <div className="flex gap-2">
-          {/* Priority selector */}
           <div className="flex gap-1 flex-1">
             {PRIORITIES.map((p) => (
               <button
                 key={p.value}
                 type="button"
                 onClick={() => setPriority(p.value)}
-                className={`flex-1 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                className={`flex-1 py-2 text-xs font-semibold rounded-lg border transition-all duration-200 ${
                   priority === p.value
-                    ? `${p.badge} border-current`
-                    : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500"
+                    ? `bg-gradient-to-r ${p.gradient} text-white border-transparent shadow-md`
+                    : "border-border text-muted-foreground hover:border-foreground/30 bg-card"
                 }`}
               >
-                {p.dot} {p.label}
+                {p.label}
               </button>
             ))}
           </div>
-          <button
-            type="submit"
-            className="px-4 py-1.5 bg-primary text-white rounded-md hover:bg-button-hover font-medium text-sm transition-colors shrink-0"
-          >
+          <Button type="submit" variant="gradient" size="sm" className="shrink-0">
+            <Plus size={16} className="mr-1" />
             Add
-          </button>
+          </Button>
         </div>
       </form>
 
-      <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+      <div className="space-y-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
         {sortedTasks.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
-            No tasks yet. Add one above!
-          </p>
+          <div className="text-center py-10">
+            <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
+              <CheckCheck size={24} className="text-muted-foreground" />
+            </div>
+            <p className="text-muted-foreground text-sm">No tasks yet. Add one above!</p>
+          </div>
         ) : (
           sortedTasks.map((task) => {
             const p = getPriority(task.priority);
             return (
               <div
                 key={task.id}
-                className={`flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg gap-2 ${p.border} transition-colors`}
+                className={`group flex items-center gap-3 p-4 rounded-xl bg-card border border-border/50 hover:border-primary/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ${p.border} ${
+                  task.completed ? "opacity-60" : ""
+                }`}
               >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="relative">
                   <input
                     type="checkbox"
                     checked={task.completed}
                     onChange={() => toggleComplete(task.id)}
-                    className="h-5 w-5 text-primary rounded focus:ring-primary shrink-0 cursor-pointer"
+                    className="peer h-5 w-5 rounded-lg border-2 border-muted-foreground/30 bg-card checked:bg-gradient-to-br checked:from-emerald-500 checked:to-green-500 checked:border-transparent focus:ring-2 focus:ring-emerald-500/30 focus:ring-offset-0 cursor-pointer appearance-none transition-all duration-200"
                   />
-                  <div className="min-w-0 flex-1">
-                    <span
-                      className={`text-sm sm:text-base block truncate ${
-                        task.completed
-                          ? "line-through text-gray-400 dark:text-gray-500"
-                          : "text-text dark:text-gray-100"
-                      }`}
-                    >
-                      {task.text}
-                    </span>
-                    <span
-                      className={`text-xs font-medium ${p.badge} px-1.5 py-0.5 rounded mt-0.5 inline-block`}
-                    >
-                      {p.dot} {p.label}
+                  {task.completed && (
+                    <CheckCheck size={14} className="absolute top-0.5 left-0.5 text-white pointer-events-none" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`text-sm font-medium transition-all duration-300 ${
+                      task.completed
+                        ? "line-through text-muted-foreground"
+                        : "text-foreground"
+                    }`}
+                  >
+                    {task.text}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${p.gradient}`} />
+                    <span className="text-[11px] font-medium text-muted-foreground">
+                      {p.label} Priority
                     </span>
                   </div>
                 </div>
                 <button
                   onClick={() => deleteTask(task.id)}
-                  className="text-error hover:text-red-700 text-sm shrink-0 transition-colors"
+                  className="w-8 h-8 rounded-lg bg-transparent hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
                 >
-                  Delete
+                  <Trash2 size={14} className="text-red-500" />
                 </button>
               </div>
             );

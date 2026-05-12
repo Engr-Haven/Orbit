@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { GitFork, Star, GitCommit, ExternalLink } from "lucide-react";
 
 const LANG_COLORS = {
   JavaScript: "#f7df1e",
@@ -62,9 +65,10 @@ const GitHubActivity = () => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (username) fetchActivity();
-    // eslint-disable-next-line react-hooks/exhaustive-deps,react-hooks/set-state-in-effect
-  }, []); // intentional: fetch once on mount with default username
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -79,63 +83,84 @@ const GitHubActivity = () => {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-primary mb-4">
-        🐙 GitHub Activity
-      </h2>
-      <div className="flex flex-col sm:flex-row gap-2 mb-4">
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter GitHub username"
-          className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
-          onKeyDown={(e) => e.key === "Enter" && fetchActivity()}
-        />
-        <button
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center shadow-lg">
+          <GitFork size={20} className="text-white" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-foreground">GitHub Activity</h2>
+          <p className="text-sm text-muted-foreground">Track events and repositories</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="flex-1">
+          <Input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter GitHub username"
+            onKeyDown={(e) => e.key === "Enter" && fetchActivity()}
+          />
+        </div>
+        <Button
           onClick={fetchActivity}
           disabled={loading}
-          className="px-4 py-3 sm:py-2 bg-primary text-white rounded-lg hover:bg-button-hover disabled:opacity-50 font-medium transition-colors"
+          variant="gradient"
         >
           {loading ? "Loading..." : "Fetch"}
-        </button>
+        </Button>
       </div>
-      {error && <p className="text-error mb-3 text-sm">{error}</p>}
+
+      {error && (
+        <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+          {error}
+        </div>
+      )}
 
       {hasData && (
-        <div className="flex gap-1 mb-3 border-b border-gray-200 dark:border-gray-600">
+        <div className="flex gap-1 mb-4 border-b border-border">
           {["activity", "repos"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 text-sm font-medium capitalize transition-colors ${
+              className={`px-4 py-2 text-sm font-medium capitalize transition-all duration-300 relative ${
                 activeTab === tab
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {tab === "repos" ? "Top Repos" : "Activity"}
+              {activeTab === tab && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 gradient-primary rounded-full" />
+              )}
             </button>
           ))}
         </div>
       )}
 
       {activeTab === "activity" && events.length > 0 && (
-        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+        <div className="space-y-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
           {events.map((event) => (
             <div
               key={event.id}
-              className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors"
+              className="group p-4 rounded-xl bg-muted/50 border border-border/50 hover:border-primary/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
             >
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
-                <div>
-                  <p className="font-medium text-text dark:text-gray-100 text-sm sm:text-base">
-                    {event.type.replace("Event", "")}
-                  </p>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 break-all">
-                    {event.repo.name}
-                  </p>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <GitCommit size={14} className="text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">
+                      {event.type.replace("Event", "")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {event.repo.name}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-500 shrink-0">
+                <span className="text-xs text-muted-foreground shrink-0 sm:mt-1">
                   {formatDate(event.created_at)}
                 </span>
               </div>
@@ -145,52 +170,61 @@ const GitHubActivity = () => {
       )}
 
       {activeTab === "repos" && repos.length > 0 && (
-        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+        <div className="space-y-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
           {repos.map((repo) => (
             <a
               key={repo.id}
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              className="group block p-4 rounded-xl bg-muted/50 border border-border/50 hover:border-primary/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
             >
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-primary text-sm truncate">
-                    {repo.name}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-foreground text-sm truncate group-hover:text-primary transition-colors">
+                      {repo.name}
+                    </p>
+                    <ExternalLink size={12} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                  </div>
                   {repo.description && (
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-1">
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
                       {repo.description}
                     </p>
                   )}
+                  {repo.language && (
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{
+                          backgroundColor: LANG_COLORS[repo.language] || "#888",
+                        }}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {repo.language}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
-                  ⭐ {repo.stargazers_count}
-                </span>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+                  <Star size={12} />
+                  {repo.stargazers_count}
+                </div>
               </div>
-              {repo.language && (
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{
-                      backgroundColor: LANG_COLORS[repo.language] || "#888",
-                    }}
-                  />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {repo.language}
-                  </span>
-                </div>
-              )}
             </a>
           ))}
         </div>
       )}
 
       {!loading && !error && events.length === 0 && (
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          Enter a username to see their recent activity
-        </p>
+        <div className="text-center py-8">
+          <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
+            <GitFork size={24} className="text-muted-foreground" />
+          </div>
+          <p className="text-muted-foreground text-sm">
+            Enter a username to see their recent activity
+          </p>
+        </div>
       )}
     </div>
   );
