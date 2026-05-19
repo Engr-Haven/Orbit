@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { GitFork, Star, GitCommit, ExternalLink } from "lucide-react";
@@ -25,7 +25,7 @@ const GitHubActivity = () => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("activity");
 
-  const fetchActivity = async () => {
+  const fetchActivity = useCallback(async () => {
     if (!username.trim()) {
       setError("Please enter a GitHub username");
       return;
@@ -62,13 +62,15 @@ const GitHubActivity = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [username]);
 
+  const hasFetchedOnMount = useRef(false);
+  
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (hasFetchedOnMount.current) return;
+    hasFetchedOnMount.current = true;
     if (username) fetchActivity();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchActivity]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {

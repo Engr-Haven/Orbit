@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -22,6 +22,14 @@ const Layout = () => {
     }
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("orbit-theme", dark ? "dark" : "light");
+    } catch {
+      // ignore storage errors
+    }
+  }, [dark]);
 
   const navItems = [
     { path: "/", icon: LayoutDashboard, label: "Dashboard", desc: "Overview" },
