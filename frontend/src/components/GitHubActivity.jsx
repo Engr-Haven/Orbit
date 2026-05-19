@@ -17,6 +17,14 @@ const LANG_COLORS = {
   Ruby: "#701516",
 };
 
+const formatDate = (dateString) =>
+  new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
 const GitHubActivity = () => {
   const [username, setUsername] = useState("Engr-Haven");
   const [events, setEvents] = useState([]);
@@ -24,6 +32,8 @@ const GitHubActivity = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("activity");
+
+  const inputRef = useRef(null);
 
   const fetchActivity = useCallback(async () => {
     if (!username.trim()) {
@@ -55,6 +65,7 @@ const GitHubActivity = () => {
         const reposData = await reposRes.json();
         setRepos(reposData);
       }
+      inputRef.current?.focus();
     } catch (err) {
       setError(err.message || "Failed to fetch GitHub activity");
       setEvents([]);
@@ -65,21 +76,12 @@ const GitHubActivity = () => {
   }, [username]);
 
   const hasFetchedOnMount = useRef(false);
-  
+
   useEffect(() => {
     if (hasFetchedOnMount.current) return;
     hasFetchedOnMount.current = true;
     if (username) fetchActivity();
   }, [fetchActivity]);
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const hasData = events.length > 0 || repos.length > 0;
 
@@ -91,25 +93,25 @@ const GitHubActivity = () => {
         </div>
         <div>
           <h2 className="text-xl font-bold text-foreground">GitHub Activity</h2>
-          <p className="text-sm text-muted-foreground">Track events and repositories</p>
+          <p className="text-sm text-muted-foreground">
+            Track events and repositories
+          </p>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="flex-1">
+        <div className="flex-1 text-foreground">
           <Input
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => { setUsername(e.target.value); setError(""); }}
+            onFocus={() => setError("")}
             placeholder="Enter GitHub username"
             onKeyDown={(e) => e.key === "Enter" && fetchActivity()}
+            ref={inputRef}
           />
         </div>
-        <Button
-          onClick={fetchActivity}
-          disabled={loading}
-          variant="gradient"
-        >
+        <Button onClick={fetchActivity} disabled={loading} variant="gradient">
           {loading ? "Loading..." : "Fetch"}
         </Button>
       </div>
@@ -187,7 +189,10 @@ const GitHubActivity = () => {
                     <p className="font-semibold text-foreground text-sm truncate group-hover:text-primary transition-colors">
                       {repo.name}
                     </p>
-                    <ExternalLink size={12} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    <ExternalLink
+                      size={12}
+                      className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    />
                   </div>
                   {repo.description && (
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
@@ -218,7 +223,7 @@ const GitHubActivity = () => {
         </div>
       )}
 
-      {!loading && !error && events.length === 0 && (
+      {!loading && !error && !hasData && (
         <div className="text-center py-8">
           <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
             <GitFork size={24} className="text-muted-foreground" />
