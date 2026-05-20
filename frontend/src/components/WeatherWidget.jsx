@@ -61,7 +61,7 @@ const WeatherWidget = ({ compact }) => {
         </div>
       )}
       <div className="flex flex-col sm:flex-row gap-2 mb-4">
-        <div className="flex-1">
+        <div className="flex-1 text-foreground">
           <Input
             type="text"
             value={city}
